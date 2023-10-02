@@ -97,5 +97,25 @@ find_function(const char *const fname) {
 
     // LAB 3: Your code here:
 
+    LOADER_PARAMS *lp = uefi_lp;
+    char *strtab = (char *) lp->StringTableStart;
+
+    struct Elf64_Sym *symtab_begin = (struct Elf64_Sym *) lp->SymbolTableStart;
+    struct Elf64_Sym *symtab_end = (struct Elf64_Sym *) lp->SymbolTableEnd;
+
+    for (struct Elf64_Sym *i = symtab_begin; i < symtab_end; ++i) {
+        if (!strcmp(fname, &strtab[i->st_name])) {
+            return i->st_value;
+        }
+    }
+    uintptr_t offset = 0;
+    struct Dwarf_Addrs addrs; 
+
+    load_kernel_dwarf_info(&addrs);
+
+    if (!address_by_fname(&addrs, fname, &offset) ||
+        !naive_address_by_fname(&addrs, fname, &offset)) { 
+        return offset;
+    }
     return 0;
 }
