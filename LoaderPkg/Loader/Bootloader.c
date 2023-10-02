@@ -105,8 +105,19 @@ InitGraphics (
   }
 
   //
+<<<<<<< HEAD
   // LAB 1: Switch to the maximum resolution of my preference.
   // Valid mode numbers are 0 to MaxMode - 1.
+=======
+  // LAB 1: Your code here.
+  //
+  // Switch to the maximum or any other resolution of your preference.
+  // Refer to Graphics Output Protocol description in UEFI spec for
+  // more details.
+  //
+  // Hint: Use QueryMode/SetMode functions.
+  //
+>>>>>>> lab3
 
   UINT32 HorizontalRes = 0;
   UINT32 VerticalRes = 0;
@@ -293,11 +304,16 @@ GetKernelFile (
   OUT  EFI_FILE_PROTOCOL  **FileProtocol
   )
 {
-  EFI_STATUS                       Status = EFI_UNSUPPORTED;
+  EFI_STATUS                       Status;
   EFI_LOADED_IMAGE_PROTOCOL        *LoadedImage;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
   EFI_FILE_PROTOCOL                *CurrentDriveRoot;
   EFI_FILE_PROTOCOL                *KernelFile;
+
+  //
+  // set Status to suppress incorrect compiler/analyzer warnings
+  //
+  Status  = EFI_UNSUPPORTED;
 
   ASSERT (FileProtocol != NULL);
 
