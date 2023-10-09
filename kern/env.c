@@ -196,7 +196,7 @@ bind_functions(struct Env *env, uint8_t *binary, size_t size, uintptr_t image_st
     char *shstr = (char *)binary + Sections[ElfHeader->e_shstrndx].sh_offset;
 
     size_t strtabInd = find_section(Sections, shstr, ElfHeader->e_shnum, ELF_SHT_STRTAB, ".strtab");
-    if (strtabInd < 0) return -1;\
+    if (strtabInd < 0) return -1;
 
     char *names = (char *)binary + Sections[strtabInd].sh_offset;
 
@@ -211,6 +211,7 @@ bind_functions(struct Env *env, uint8_t *binary, size_t size, uintptr_t image_st
         if (ELF64_ST_BIND(sym->st_info) == STB_GLOBAL &&
             ELF64_ST_TYPE(sym->st_info) == STT_OBJECT) {
 
+            // symbol string table
             uintptr_t addr = find_function(&names[sym->st_name]);
             if (addr && sym->st_value >= image_start && sym->st_value <= image_end) {
                 *((uintptr_t *) sym->st_value) = addr;
@@ -275,8 +276,7 @@ load_icode(struct Env *env, uint8_t *binary, size_t size) {
         return -E_INVALID_EXE;
     }
 
-    uintptr_t image_start = 0, image_end = 0;
-    _Bool flag_start = false;
+    uintptr_t image_start = UINTPTR_MAX, image_end = 0;
 
     struct Proghdr *ProgramHeaders = (struct Proghdr *) (binary + ElfHeader->e_phoff);
     for (size_t i = 0; i < ElfHeader->e_phnum; ++i) {
@@ -288,13 +288,8 @@ load_icode(struct Env *env, uint8_t *binary, size_t size) {
         void *source = binary + ph->p_offset;
         void *dist = (void *) ph->p_va;
 
-        if (!flag_start || image_start > (uintptr_t) dist) { 
-            image_start = (uintptr_t) dist;
-            flag_start = true;
-        }
-        if (image_end < (uintptr_t) (dist + ph->p_memsz)) {
-            image_end = (uintptr_t) (dist + ph->p_memsz);
-        }
+        image_start = MIN(image_start, (uintptr_t) dist);
+        image_end = MAX(image_end, (uintptr_t) (dist + ph->p_memsz));
 
         memcpy(dist, source, ph->p_filesz); 
         memset(dist + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
@@ -468,3 +463,4 @@ env_run(struct Env *env) {
 
     while (1); 
 }
+
