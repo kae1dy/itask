@@ -308,7 +308,7 @@ pmtimer_get_timeval(void) {
  *      can be 24-bit or 32-bit. */
 uint64_t
 pmtimer_cpu_frequency(void) {
-    static uint64_t get_cpu_freq;
+    static uint64_t cpu_freq;
 
     // LAB 5: Your code here
     if (cpu_freq) return cpu_freq;
