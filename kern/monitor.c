@@ -129,7 +129,8 @@ mon_frequency(int argc, char **argv, struct Trapframe *tf) {
 /* Implement memory (mon_memory) commands. */
 int
 mon_memory(int argc, char **argv, struct Trapframe *tf) {
-    dump_memory_lists();
+    if (argc == 2 && !strcmp(argv[1], "-l")) dfs(&root);
+    else dump_memory_lists();
     return 0;
 }
 

@@ -451,6 +451,15 @@ check_virtual_tree(struct Page *page, int class) {
     }
 }
 
+void
+dfs(struct Page *node) {
+    if (!node) return;
+
+    dfs(node->left);
+    if (!node->left && !node->right) cprintf("%08lX: ST %X  REFC %u CL %d\n", (uintptr_t) node->addr << CLASS_BASE, node->state, node->refc, node->class);
+    dfs(node->right);
+}
+
 /*
  * Pretty-print virtual memory tree
  */
