@@ -111,7 +111,7 @@ acpi_find_table(const char *sign) {
 
     rsdt_address = (XSDT_mode) ? rsdp->XsdtAddress : rsdp->RsdtAddress;
     RSDT *rsdt = mmio_map_region(rsdt_address, sizeof(*rsdt));
-    rsdt = mmio_remap_last_region(rsdt_address, NULL, sizeof(*rsdt), rsdt->h.Length);
+    rsdt = mmio_remap_last_region(rsdt_address, (void *) rsdt, sizeof(*rsdt), rsdt->h.Length);
 
     for (int i = 0; i < rsdt->h.Length; ++i) {
         checksum += ((uint8_t *) rsdt)[i];
@@ -123,7 +123,7 @@ acpi_find_table(const char *sign) {
 
         physaddr_t header_address = rsdt->PointerToOtherSDT[i];
         ACPISDTHeader *header = mmio_map_region(header_address, sizeof(*header));
-        header = mmio_remap_last_region(header_address, NULL, sizeof(*header), header->Length);
+        header = mmio_remap_last_region(header_address, (void*)header, sizeof(*header), header->Length);
 
         if (!strncmp(header->Signature, sign, sizeof(header->Signature))) return header;
     }
