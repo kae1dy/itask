@@ -83,6 +83,10 @@ debuginfo_rip(uintptr_t addr, struct Ripdebuginfo *info) {
 
     // LAB 8: Your code here:
 
+
+    uintptr_t cr3 = curenv->address_space.cr3;
+    if (cr3 != kspace.cr3) lcr3(kspace.cr3);
+
     /* Load dwarf section pointers from either
      * currently running program binary or use
      * kernel debug info provided by bootloader
@@ -92,7 +96,11 @@ debuginfo_rip(uintptr_t addr, struct Ripdebuginfo *info) {
     // LAB 8: Your code here:
 
     struct Dwarf_Addrs addrs;
-    load_kernel_dwarf_info(&addrs);
+    if (addr < MAX_USER_READABLE) {
+        load_user_dwarf_info(&addrs);
+    } else {
+        load_kernel_dwarf_info(&addrs);
+    }
 
     Dwarf_Off offset = 0, line_offset = 0;
     int res = info_by_address(&addrs, addr, &offset);
