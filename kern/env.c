@@ -96,22 +96,24 @@ env_init(void) {
      * kzalloc_region() only works with current_space != NULL */
     // LAB 8: Your code here
 
-    envs = kzalloc_region(sizeof(*envs) * NENV);
-    memset(envs, 0, ROUNDUP(NENV * sizeof(*envs), PAGE_SIZE));
-
+#ifndef CONFIG_KPSPACE
+    assert(current_space);
+    envs = kzalloc_region(sizeof(struct Env) * NENV);
 
     /* Map envs to UENVS read-only,
      * but user-accessible (with PROT_USER_ set) */
     // LAB 8: Your code here
-    map_region(current_space, UENVS, &kspace, (uintptr_t) envs, UENVS_SIZE,  PROT_R | PROT_USER_); 
-
+    map_region(current_space, UENVS, &kspace, (uintptr_t)envs, UENVS_SIZE, PROT_R | PROT_USER_);
+#endif
 
     /* Set up envs array */
     // LAB 3: Your code here
     for (size_t i = 0; i <= NENV - 1; ++i) { 
-        // envs[i].env_id = 0;
-        // envs[i].env_status = ENV_FREE;
         envs[i].env_link = (i != NENV - 1) ? &envs[i + 1] : NULL;
+        envs[i].env_id = 0;
+        envs[i].env_status = ENV_FREE;
+        envs[i].env_parent_id = 0;
+        envs[i].env_runs = 0;
     }
     env_free_list = envs;
 }
@@ -372,16 +374,13 @@ env_create(uint8_t *binary, size_t size, enum EnvType type) {
     struct Env * env;
 
     int Status = env_alloc(&env, 0, type);
-    if (Status) { 
+    if (Status < 0) { 
         panic("env_alloc: %i", Status);
     }
-    
     Status = load_icode(env, binary, size);
-    if (Status) { 
+    if (Status < 0) { 
         panic("load_icode: %i", Status);
     }
-    env->env_type = type;
-
     // LAB 8: Your code here
     env->binary = binary;
 

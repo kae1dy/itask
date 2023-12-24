@@ -75,6 +75,15 @@ acpi_enable(void) {
         ;
 }
 
+static bool
+check_sum(int8_t *data, size_t len) {
+    int8_t sum = 0;
+    for (int8_t *end = data + len; data < end; data++) {
+        sum += *data;
+    }
+    return sum == 0;
+}
+
 static void *
 acpi_find_table(const char *sign) {
     /*
@@ -91,44 +100,37 @@ acpi_find_table(const char *sign) {
      */
     // LAB 5: Your code here:
 
-    RSDP *rsdp = mmio_map_region((physaddr_t) uefi_lp->ACPIRoot, sizeof(*rsdp));
-    if (strncmp(rsdp->Signature, "RSD PTR ", sizeof(rsdp->Signature))) {
-        panic("Invalid RSDP Signature.\n");
+    RSDP *rsdp = (void *) uefi_lp->ACPIRoot;
+    rsdp = mmio_map_region((uintptr_t) rsdp, sizeof *rsdp);
+    assert(strncmp(rsdp->Signature, "RSD PTR ", 8) == 0 &&
+        check_sum((void *) rsdp, 20) && check_sum((void *) rsdp, rsdp->Length) &&
+        rsdp->Revision == 2);
+
+    ACPISDTHeader *xsdt_phys;
+    if ((xsdt_phys = (void *) rsdp->XsdtAddress)) {
+        ACPISDTHeader *xsdt = mmio_map_region((uintptr_t) xsdt_phys, sizeof *xsdt_phys);
+        assert(strncmp(xsdt->Signature, "XSDT", 4) == 0 &&
+            check_sum((void *) xsdt, xsdt->Length));
+
+        if (xsdt->Length > PAGE_SIZE) {
+            xsdt = mmio_remap_last_region((uintptr_t) xsdt_phys, xsdt, sizeof *xsdt_phys, xsdt->Length);
+        }
+
+        for (ACPISDTHeader **entry = (void *) &xsdt[1], **end = (void *) xsdt + xsdt->Length; 
+             entry < end;
+             entry++) {
+            ACPISDTHeader *table =  mmio_map_region((uintptr_t) *entry, sizeof **entry);
+            if (strncmp(table->Signature, sign, 4) == 0) {
+                if (table->Length > PAGE_SIZE) {
+                    table = mmio_remap_last_region((uintptr_t) *entry, table, sizeof *table, table->Length);
+                }
+                return table;
+            }
+        }
+
     }
 
-    uint8_t checksum = 0, *ptr;
-    physaddr_t rsdt_address;
-    bool XSDT_mode = (bool) rsdp->Revision;
-
-    for (ptr = (uint8_t *) rsdp; ptr < (uint8_t *) &rsdp->Length; ++ptr) {
-        checksum += *ptr;
-    }
-    if (checksum) panic("Invalid checksum RSDP part");
-
-    // Only for ACPI version 2.0 to 6.1
-    for (; XSDT_mode && ptr < (uint8_t *) rsdp + sizeof(*rsdp); ++ptr) {
-        checksum += *ptr;
-    }
-    if (checksum) panic("Invalid checksum XSDP part");
-
-    rsdt_address = (XSDT_mode) ? rsdp->XsdtAddress : rsdp->RsdtAddress;
-    RSDT *rsdt = mmio_map_region(rsdt_address, sizeof(*rsdt));
-    rsdt = mmio_remap_last_region(rsdt_address, (void *) rsdt, sizeof(*rsdt), rsdt->h.Length);
-
-    for (int i = 0; i < rsdt->h.Length; ++i) {
-        checksum += ((uint8_t *) rsdt)[i];
-    }
-    if (checksum) panic("Invalid checksum RSDT");
-
-    size_t counter = (rsdt->h.Length - sizeof(rsdt->h)) / ((XSDT_mode) ? 8 : 4);
-    for (size_t i = 0; i < counter; ++i) {
-
-        physaddr_t header_address = rsdt->PointerToOtherSDT[i];
-        ACPISDTHeader *header = mmio_map_region(header_address, sizeof(*header));
-        header = mmio_remap_last_region(header_address, (void*)header, sizeof(*header), header->Length);
-
-        if (!strncmp(header->Signature, sign, sizeof(header->Signature))) return header;
-    }
+    cprintf("ERROR: XSDT is not present or the required signature (%s) was not found\n", sign);
     return NULL;
 }
 

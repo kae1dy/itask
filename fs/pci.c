@@ -46,7 +46,7 @@ pci_iop_read_dword(struct PciDevice *pcid, uint8_t reg) {
      *      and read from PCI_PORT_DATA. */
     // LAB 10: Your code here
     pci_iop_select_address(pcid, reg);
-    return 0;
+    return inl(PCI_PORT_DATA);
 }
 
 static inline void
