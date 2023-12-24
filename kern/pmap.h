@@ -104,6 +104,7 @@ struct PagePool {
     struct Page data[];    /* Page descriptors storage */
 };
 
+int map_physical_region(struct AddressSpace *dst, uintptr_t dstart, uintptr_t pstart, size_t size, int flags);
 int map_region(struct AddressSpace *dspace, uintptr_t dst, struct AddressSpace *sspace, uintptr_t src, uintptr_t size, int flags);
 void unmap_region(struct AddressSpace *dspace, uintptr_t dst, uintptr_t size);
 void init_memory(void);

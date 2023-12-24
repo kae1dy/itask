@@ -34,6 +34,14 @@ bc_pgfault(struct UTrapframe *utf) {
      * the disk. */
     // LAB 10: Your code here
 
+    addr = ROUNDDOWN(addr, BLKSIZE);
+    int res = sys_alloc_region(CURENVID, addr, BLKSIZE, PROT_RW);
+    if (res) panic("Alloc region Error: %i.\n", res);
+
+    *(char *)addr = 0;
+    res = nvme_read(blockno * BLKSECTS, addr, BLKSECTS);
+    if (res != NVME_OK) panic("Nvme Read Error on va %p: %i.\n", addr, res);
+
     return 1;
 }
 
@@ -55,8 +63,14 @@ flush_block(void *addr) {
         panic("reading non-existent block %08x out of %08x\n", blockno, super->s_nblocks);
 
     // LAB 10: Your code here.
-    (void)res;
+    addr = ROUNDDOWN(addr, BLKSIZE);
+    if (!is_page_present(addr) || !is_page_dirty(addr)) return;
 
+    res = nvme_write(blockno * BLKSECTS, addr, BLKSECTS);
+    if (res != NVME_OK) panic("NVME Write Error on va %p failed: %i.\n", addr, res);
+
+    res = sys_map_region(CURENVID, addr, CURENVID, addr, BLKSIZE, PTE_SYSCALL & get_prot(addr));
+    if (res) panic("Map Region Error, va %p : %i.\n", addr, res);
 
     assert(!is_page_dirty(addr));
 }

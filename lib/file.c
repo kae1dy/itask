@@ -114,8 +114,20 @@ devfile_read(struct Fd *fd, void *buf, size_t n) {
 
     // LAB 10: Your code here:
     size_t res0 = 0;
-    (void)fd, (void)buf, (void)n;
+    for (; res0 < n;) {
 
+        fsipcbuf.read.req_fileid = fd->fd_file.id;
+        fsipcbuf.read.req_n = n;
+
+        int ret = fsipc(FSREQ_READ, NULL);
+        if (ret < 0) return ret;
+        if (!ret) return res0;
+
+        memcpy(buf, fsipcbuf.readRet.ret_buf, ret);
+
+        res0 += ret;
+        buf += ret;
+    }
     return res0;
 }
 
@@ -134,8 +146,19 @@ devfile_write(struct Fd *fd, const void *buf, size_t n) {
 
     // LAB 10: Your code here:
     size_t res0 = 0;
-    (void)fd, (void)buf, (void)n;
+    for (; res0 < n;) {
+        size_t next = MIN(n, sizeof(fsipcbuf.write.req_buf));
 
+        memcpy(fsipcbuf.write.req_buf, buf, next);
+        fsipcbuf.write.req_fileid = fd->fd_file.id;
+        fsipcbuf.write.req_n = next;
+
+        int ret = fsipc(FSREQ_READ, NULL);
+        if (ret < 0) return ret;
+
+        res0 += ret;
+        buf += ret;
+    }
     return res0;
 }
 
