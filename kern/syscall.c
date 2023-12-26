@@ -402,7 +402,7 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf) {
 static int
 sys_gettime(void) {
     // LAB 12: Your code here
-    return 0;
+    return gettime();
 }
 
 /*
@@ -427,7 +427,6 @@ uintptr_t
 syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5, uintptr_t a6) {
     /* Call the function corresponding to the 'syscallno' parameter.
      * Return any appropriate return value. */
-<<<<<<< HEAD
     switch (syscallno) {
         case SYS_cputs:
             return sys_cputs((const char *)a1, (size_t)a2);
@@ -460,19 +459,14 @@ syscall(uintptr_t syscallno, uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t
             return sys_region_refs(a1, (size_t)a2, a3, a4);
         case SYS_map_physical_region:
             return sys_map_physical_region(a1, (envid_t)a2, a3, (size_t)a4, (int)a5);
+        // LAB 11: Your code here
         case SYS_env_set_trapframe:
             return sys_env_set_trapframe((envid_t)a1, (struct Trapframe *)a2);
+        // LAB 12: Your code here
+        case SYS_gettime:
+            return sys_gettime();
         default:
             return -E_NO_SYS;
     }
-=======
-
-    // LAB 8: Your code here
-    // LAB 9: Your code here
-    // LAB 10: Your code here
-    // LAB 11: Your code here
-    // LAB 12: Your code here
-
->>>>>>> lab12
     return -E_NO_SYS;
 }
