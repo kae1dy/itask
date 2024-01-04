@@ -160,6 +160,11 @@ int pipeisclosed(int pipefd);
 /* wait.c */
 void wait(envid_t env);
 
+/* alloc.c */
+void * size(malloc_t size);
+void * calloc(size_t nmemb, size_t size);
+void free(void *ptr);
+
 /* File open modes */
 #define O_RDONLY  0x0000 /* open for reading only */
 #define O_WRONLY  0x0001 /* open for writing only */
