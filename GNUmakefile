@@ -324,6 +324,9 @@ IMAGES += $(OBJDIR)/fs/fs.img
 QEMUOPTS += -bios $(OVMF_FIRMWARE)
 # QEMUOPTS += -debugcon file:$(UEFIDIR)/debug.log -global isa-debugcon.iobase=0x402
 
+# Enable graphic driver support
+QEMUOPTS += -vga virtio
+
 define POST_CHECKOUT
 #!/bin/sh -x
 make clean

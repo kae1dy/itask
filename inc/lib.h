@@ -21,6 +21,7 @@
 #include <inc/fs.h>
 #include <inc/fd.h>
 #include <inc/args.h>
+#include <inc/graphics.h>
 
 #ifdef SANITIZE_USER_SHADOW_BASE
 /* asan unpoison routine used for whitelisting regions. */
@@ -164,6 +165,18 @@ void wait(envid_t env);
 void * size(malloc_t size);
 void * calloc(size_t nmemb, size_t size);
 void free(void *ptr);
+
+/* graphic.c */
+window_d create_window(uint32_t width, uint32_t height, int mode);
+int destroy_window(window_d window);
+texture_d create_texture(uint32_t width, uint32_t height, bool need_mapping, uint32_t **buffer_map);
+int destroy_texture(texture_d texture);
+renderer_d create_renderer(window_d window);
+int destroy_renderer(renderer_d renderer);
+int update_texture(texture_d texture, char * buffer, size_t size);
+int copy_texture(renderer_d renderer, texture_d texture);
+int display(renderer_d renderer);
+int clear(renderer_d renderer);
 
 /* File open modes */
 #define O_RDONLY  0x0000 /* open for reading only */
