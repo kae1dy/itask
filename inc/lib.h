@@ -162,7 +162,7 @@ int pipeisclosed(int pipefd);
 void wait(envid_t env);
 
 /* alloc.c */
-void * size(malloc_t size);
+void * malloc(size_t size);
 void * calloc(size_t nmemb, size_t size);
 void free(void *ptr);
 
