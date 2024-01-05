@@ -5,6 +5,8 @@
 #	Recursive Make Considered Harmful
 #	http://aegis.sourceforge.net/auug97.pdf
 #
+
+
 OBJDIR := obj
 SHELL := /bin/bash
 
@@ -282,7 +284,9 @@ all: .git/hooks/post-checkout .git/hooks/pre-commit
 .PRECIOUS:  $(OBJDIR)/kern/%.o \
 	   $(OBJDIR)/lib/%.o $(OBJDIR)/fs/%.o $(OBJDIR)/net/%.o \
 	   $(OBJDIR)/user/%.o \
-	   $(OBJDIR)/prog/%.o
+	   $(OBJDIR)/prog/%.o \
+	   $(OBJDIR)/quake/%.o
+
 
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -DLAB=$(LAB) -mcmodel=large -m64
 USER_CFLAGS := $(CFLAGS) -DLAB=$(LAB) -mcmodel=large -m64
@@ -308,10 +312,12 @@ $(OBJDIR)/.vars.%: FORCE
 # Include Makefrags for subdirectories
 include kern/Makefrag
 include lib/Makefrag
+
 ifeq ($(CONFIG_KSPACE),y)
 include prog/Makefrag
 else
 include user/Makefrag
+include quake/Makefrag
 include fs/Makefrag
 endif
 

@@ -279,6 +279,16 @@ fstat(int fdnum, struct Stat *stat) {
     return (*dev->dev_stat)(fd, stat);
 }
 
+off_t
+fsize(int fdnum) {
+    struct Stat st;
+    int res;
+
+    if ((res = fstat(fdnum, &st)) < 0) return res;
+    return st.st_size;
+}
+
+
 int
 stat(const char *path, struct Stat *stat) {
     int fd = open(path, O_RDONLY);

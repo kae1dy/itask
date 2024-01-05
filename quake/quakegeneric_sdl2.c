@@ -20,14 +20,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakegeneric.h"
 
-#include <assert.h>
 #define SDL_MAIN_HANDLED 1
-#include <SDL.h>
-#include <stdint.h>
+// #include <SDL.h>           <-- TO DO: our implementation
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *texture;
+// SDL_Window *window;
+// SDL_Renderer *renderer;
+// SDL_Texture *texture;
 uint32_t *rgbpixels;
 unsigned char pal[768];
 
@@ -40,10 +38,11 @@ static int keybuffer_start;  // index of next item to be read
 
 void QG_Init(void)
 {
-	SDL_Init(SDL_INIT_EVERYTHING);
-	window = SDL_CreateWindow("Quake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, QUAKEGENERIC_RES_X, QUAKEGENERIC_RES_Y, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC);
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, QUAKEGENERIC_RES_X, QUAKEGENERIC_RES_Y);
+	// TO DO
+	// SDL_Init(SDL_INIT_EVERYTHING);
+	// window = SDL_CreateWindow("Quake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, QUAKEGENERIC_RES_X, QUAKEGENERIC_RES_Y, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	// renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC);
+	// texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, QUAKEGENERIC_RES_X, QUAKEGENERIC_RES_Y);
 	rgbpixels = malloc(QUAKEGENERIC_RES_X * QUAKEGENERIC_RES_Y * sizeof(uint32_t));
 
 	keybuffer_len = 0;
@@ -195,11 +194,11 @@ int QG_GetKey(int *down, int *key)
 
 void QG_Quit(void)
 {
-	if (window) SDL_DestroyWindow(window);
-	if (renderer) SDL_DestroyRenderer(renderer);
-	if (texture) SDL_DestroyTexture(texture);
-	if (rgbpixels) free(rgbpixels);
-	SDL_Quit();
+	// if (window) SDL_DestroyWindow(window);
+	// if (renderer) SDL_DestroyRenderer(renderer);
+	// if (texture) SDL_DestroyTexture(texture);
+	// if (rgbpixels) free(rgbpixels);
+	// SDL_Quit();
 }
 
 #define ASPECT_WH ((float)(QUAKEGENERIC_RES_X) / (float)(QUAKEGENERIC_RES_Y))
@@ -246,7 +245,7 @@ static inline void calc_screen_pos(int x, int y, SDL_Rect *rect)
 void QG_DrawFrame(void *pixels)
 {
 	int x, y;
-	SDL_Rect rect;
+	// SDL_Rect rect;
 
 	// convert pixels
 	for (int i = 0; i < QUAKEGENERIC_RES_X * QUAKEGENERIC_RES_Y; i++)
@@ -256,16 +255,16 @@ void QG_DrawFrame(void *pixels)
 		rgbpixels[i] = ARGB(*(entry), *(entry + 1), *(entry + 2), 255);
 	}
 
-	// calc window pos
-	SDL_GetRendererOutputSize(renderer, &x, &y);
-	calc_screen_pos(x, y, &rect);
-	calc_screen_size(x, y, &rect);
+	// calc window pos TO DO
+	// SDL_GetRendererOutputSize(renderer, &x, &y);
+	// calc_screen_pos(x, y, &rect);
+	// calc_screen_size(x, y, &rect);
 
-	// blit
-	SDL_UpdateTexture(texture, NULL, rgbpixels, QUAKEGENERIC_RES_X * sizeof(uint32_t));
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, texture, NULL, &rect);
-	SDL_RenderPresent(renderer);
+	// blit TO DO
+	// SDL_UpdateTexture(texture, NULL, rgbpixels, QUAKEGENERIC_RES_X * sizeof(uint32_t));
+	// SDL_RenderClear(renderer);
+	// SDL_RenderCopy(renderer, texture, NULL, &rect);
+	// SDL_RenderPresent(renderer);
 }
 
 void QG_SetPalette(unsigned char palette[768])
@@ -281,36 +280,37 @@ int main(int argc, char *argv[])
 
 	QG_Create(argc, argv);
 
-    uint64_t cpu_freq = pmtimer_cpu_frequency();
+    // uint64_t cpu_freq = pmtimer_cpu_frequency();
 
 	// oldtime = (double) SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency() - 0.1; // from kern/kclock.c
 	
-    uint64_t tsc_start = read_tsc();
-	while (running)
-	{
-		// poll events
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-				case SDL_QUIT:
-					running = 0;
-					break;
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
-					KeyPush((event.type == SDL_KEYDOWN), ConvertToQuakeKey(event.key.keysym.sym));
-					break;
-			}
-		}
+	// TO DO
+	//    uint64_t tsc_start = read_tsc();
+	// while (running)
+	// {
+	// 	// poll events
+	// 	SDL_Event event;
+	// 	while (SDL_PollEvent(&event))
+	// 	{
+	// 		switch (event.type)
+	// 		{
+	// 			case SDL_QUIT:
+	// 				running = 0;
+	// 				break;
+	// 			case SDL_KEYDOWN:
+	// 			case SDL_KEYUP:
+	// 				KeyPush((event.type == SDL_KEYDOWN), ConvertToQuakeKey(event.key.keysym.sym));
+	// 				break;
+	// 		}
+	// 	}
 
-		// Run the frame at the correct duration.
-		// newtime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency(); // from kern/kclock.c
+	// 	// Run the frame at the correct duration.
+	// 	// newtime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency(); // from kern/kclock.c
 		
-		tsc_end = read_tsc();
-		QG_Tick((tsc_end - tsc_end_start) / (1.0 * cpu_freq));
-		tsc_start = tsc_end;
-	}
+	// 	tsc_end = read_tsc();
+	// 	QG_Tick((tsc_end - tsc_end_start) / (1.0 * cpu_freq));
+	// 	tsc_start = tsc_end;
+	// }
 
-	return 0;
+	// return 0;
 }

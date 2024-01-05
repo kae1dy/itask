@@ -47,9 +47,9 @@ void CL_StopPlayback (void)
 	if (!cls.demoplayback)
 		return;
 
-	fclose (cls.demofile);
+	close(cls.demofile);
 	cls.demoplayback = false;
-	cls.demofile = NULL;
+	cls.demofile = 0;
 	cls.state = ca_disconnected;
 
 	if (cls.timedemo)
@@ -70,14 +70,17 @@ void CL_WriteDemoMessage (void)
 	float	f;
 
 	len = LittleLong (net_message.cursize);
-	fwrite (&len, 4, 1, cls.demofile);
-	for (i=0 ; i<3 ; i++)
+	write(cls.demofile, &len, sizeof(len));
+
+	for (i=0 ; i < 3; i++)
 	{
 		f = LittleFloat (cl.viewangles[i]);
-		fwrite (&f, 4, 1, cls.demofile);
+		write(cls.demofile, &f, sizeof(f));
 	}
-	fwrite (net_message.data, net_message.cursize, 1, cls.demofile);
-	fflush (cls.demofile);
+
+	write(cls.demofile, net_message.data, net_message.cursize);
+
+	// fflush (cls.demofile); TO DO: need implem flush in file
 }
 
 /*
@@ -114,19 +117,19 @@ int CL_GetMessage (void)
 		}
 		
 	// get the next message
-		fread (&net_message.cursize, 4, 1, cls.demofile);
+		read(cls.demofile, &net_message.cursize, 4);
 		VectorCopy (cl.mviewangles[0], cl.mviewangles[1]);
 		for (i=0 ; i<3 ; i++)
 		{
-			r = fread (&f, 4, 1, cls.demofile);
+			r = read(cls.demofile, &f, 4);
 			cl.mviewangles[0][i] = LittleFloat (f);
 		}
 		
 		net_message.cursize = LittleLong (net_message.cursize);
 		if (net_message.cursize > MAX_MSGLEN)
 			Sys_Error ("Demo message > MAX_MSGLEN");
-		r = fread (net_message.data, net_message.cursize, 1, cls.demofile);
-		if (r != 1)
+		r = read(cls.demofile, net_message.data, net_message.cursize);
+		if (r != net_message.cursize)
 		{
 			CL_StopPlayback ();
 			return 0;
@@ -180,8 +183,8 @@ void CL_Stop_f (void)
 	CL_WriteDemoMessage ();
 
 // finish up
-	fclose (cls.demofile);
-	cls.demofile = NULL;
+	close(cls.demofile);
+	cls.demofile = 0;
 	cls.demorecording = false;
 	Con_Printf ("Completed demo\n");
 }
@@ -244,7 +247,7 @@ void CL_Record_f (void)
 	COM_DefaultExtension (name, ".dem");
 
 	Con_Printf ("recording to %s.\n", name);
-	cls.demofile = fopen (name, "wb");
+	cls.demofile = open(name, O_WRONLY | O_CREAT);
 	if (!cls.demofile)
 	{
 		Con_Printf ("ERROR: couldn't open.\n");

@@ -424,7 +424,7 @@ Host_Savegame_f
 void Host_Savegame_f (void)
 {
 	char	name[256];
-	FILE	*f;
+	int 	fd;
 	int		i;
 	char	comment[SAVEGAME_COMMENT_LENGTH+1];
 
@@ -474,40 +474,40 @@ void Host_Savegame_f (void)
 	COM_DefaultExtension (name, ".sav");
 	
 	Con_Printf ("Saving game to %s...\n", name);
-	f = fopen (name, "w");
+	fd = open(name, O_WRONLY | O_CREATE);
 	if (!f)
 	{
 		Con_Printf ("ERROR: couldn't open.\n");
 		return;
 	}
 	
-	fprintf (f, "%i\n", SAVEGAME_VERSION);
+	fprintf (fd, "%i\n", SAVEGAME_VERSION);
 	Host_SavegameComment (comment);
-	fprintf (f, "%s\n", comment);
+	fprintf (fd, "%s\n", comment);
 	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-		fprintf (f, "%f\n", svs.clients->spawn_parms[i]);
-	fprintf (f, "%d\n", current_skill);
-	fprintf (f, "%s\n", sv.name);
-	fprintf (f, "%f\n",sv.time);
+		fprintf (fd, "%f\n", svs.clients->spawn_parms[i]);
+	fprintf (fd, "%d\n", current_skill);
+	fprintf (fd, "%s\n", sv.name);
+	fprintf (fd, "%f\n",sv.time);
 
 // write the light styles
 
 	for (i=0 ; i<MAX_LIGHTSTYLES ; i++)
 	{
 		if (sv.lightstyles[i])
-			fprintf (f, "%s\n", sv.lightstyles[i]);
+			fprintf (fd, "%s\n", sv.lightstyles[i]);
 		else
-			fprintf (f,"m\n");
+			fprintf (fd,"m\n");
 	}
 
 
 	ED_WriteGlobals (f);
 	for (i=0 ; i<sv.num_edicts ; i++)
 	{
-		ED_Write (f, EDICT_NUM(i));
-		fflush (f);
+		ED_Write (fd, EDICT_NUM(i));
+		fflush (fd);
 	}
-	fclose (f);
+	close(fd);
 	Con_Printf ("done.\n");
 }
 
@@ -517,10 +517,12 @@ void Host_Savegame_f (void)
 Host_Loadgame_f
 ===============
 */
+
+// TO DO
 void Host_Loadgame_f (void)
 {
 	char	name[MAX_OSPATH];
-	FILE	*f;
+	int 	fd;
 	char	mapname[MAX_QPATH];
 	float	time, tfloat;
 	char	str[32768], *start;
@@ -549,8 +551,8 @@ void Host_Loadgame_f (void)
 //	SCR_BeginLoadingPlaque ();
 
 	Con_Printf ("Loading game from %s...\n", name);
-	f = fopen (name, "r");
-	if (!f)
+	fd = open (name, O_RDONLY);
+	if (fd < 0)
 	{
 		Con_Printf ("ERROR: couldn't open.\n");
 		return;

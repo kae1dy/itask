@@ -439,6 +439,8 @@ int		load_cursor;		// 0 < load_cursor < MAX_SAVEGAMES
 char	m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH+1];
 int		loadable[MAX_SAVEGAMES];
 
+
+// TO DO:
 void M_ScanSaves (void)
 {
 	int		i, j;
