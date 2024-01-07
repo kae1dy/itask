@@ -8,7 +8,7 @@ enum {
     GRAPHIC_TEXTURE_CREATE_ERROR,
     GRAPHIC_TEXTURE_UPDATE_ERROR,
     GRAPHIC_RENDERER_CREATE_ERROR,
-    GRAPHIC_INVALID_REQUEST
+    GRAPHIC_INVAL
 };
 
 /* Definitions for requests from clients to graphic server. */
