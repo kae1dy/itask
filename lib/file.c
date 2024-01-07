@@ -14,7 +14,7 @@ static int
 fsipc(unsigned type, void *dstva) {
     static envid_t fsenv;
 
-    if (!fsenv) fsenv = ipc_find_env(ENV_TYPE_FS);
+    if (!fsenv) fsenv = ipc_find_env(ENV_TYPE_GS);
 
     static_assert(sizeof(fsipcbuf) == PAGE_SIZE, "Invalid fsipcbuf size");
 

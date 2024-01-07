@@ -171,6 +171,7 @@ i386_init(void) {
 
 #if LAB >= 10
     ENV_CREATE(fs_fs, ENV_TYPE_FS);
+    ENV_CREATE(gs_gs, ENV_TYPE_GS);
 #endif
 
 #if defined(TEST)

@@ -282,6 +282,8 @@ all: .git/hooks/post-checkout .git/hooks/pre-commit
 .PRECIOUS:  $(OBJDIR)/kern/%.o \
 	   $(OBJDIR)/lib/%.o $(OBJDIR)/fs/%.o $(OBJDIR)/net/%.o \
 	   $(OBJDIR)/user/%.o \
+	   $(OBJDIR)/graphic/%.o \
+	   $(OBJDIR)/doom-jos.o \
 	   $(OBJDIR)/prog/%.o
 
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -DLAB=$(LAB) -mcmodel=large -m64
@@ -313,6 +315,7 @@ include prog/Makefrag
 else
 include user/Makefrag
 include fs/Makefrag
+include graphic/Makefrag
 endif
 
 QEMUOPTS = -hda fat:rw:$(JOS_ESP) -serial mon:stdio -gdb tcp::$(GDBPORT)
@@ -320,12 +323,10 @@ QEMUOPTS += -m 512M -M q35 -cpu Nehalem -d int,cpu_reset,mmu,pcall -no-reboot
 QEMUOPTS += $(shell if $(QEMU) -display none -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 IMAGES = $(OVMF_FIRMWARE) $(JOS_LOADER) $(OBJDIR)/kern/kernel $(JOS_ESP)/EFI/BOOT/kernel $(JOS_ESP)/EFI/BOOT/$(JOS_BOOTER)
 QEMUOPTS += -drive file=$(OBJDIR)/fs/fs.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm
+QEMUOPTS += -vga virtio
 IMAGES += $(OBJDIR)/fs/fs.img
 QEMUOPTS += -bios $(OVMF_FIRMWARE)
 # QEMUOPTS += -debugcon file:$(UEFIDIR)/debug.log -global isa-debugcon.iobase=0x402
-
-# Enable graphic driver support
-QEMUOPTS += -vga virtio
 
 define POST_CHECKOUT
 #!/bin/sh -x
@@ -376,6 +377,12 @@ pre-qemu: .gdbinit
 
 qemu: $(IMAGES) pre-qemu
 	$(QEMU) $(QEMUOPTS)
+
+qemu-vmware: $(IMAGES) pre-qemu
+	$(QEMU) $(QEMUOPTS) -vga vmware
+
+qemu-std: $(IMAGES) pre-qemu
+	$(QEMU) $(QEMUOPTS) -vga std
 
 qemu-nox: $(IMAGES) pre-qemu
 	@echo "***"
