@@ -30,7 +30,7 @@ window_d create_window(uint32_t width, uint32_t height, int mode) {
     gsipcbuf.create_window.req_height = height;
     gsipcbuf.create_window.req_mode = mode;
 
-    int res = gsipc(VSREQ_CREATE_WINDOW, &gsipcbuf);
+    int res = gsipc(GSREQ_CREATE_WINDOW, &gsipcbuf);
     if (res)
         return NULL;
 
@@ -45,7 +45,7 @@ window_d create_window(uint32_t width, uint32_t height, int mode) {
 int destroy_window(window_d window) {
     gsipcbuf.destroy_window.req_window = window;
 
-    return gsipc(VSREQ_DESTROY_WINDOW, &gsipcbuf);
+    return gsipc(GSREQ_DESTROY_WINDOW, &gsipcbuf);
 }
 
 /* Create a new texture.
@@ -58,7 +58,7 @@ texture_d create_texture(uint32_t width, uint32_t height, bool need_mapping, uin
     gsipcbuf.create_texture.req_height = height;
     gsipcbuf.create_texture.req_need_mapping = need_mapping;
 
-    int res = gsipc(VSREQ_CREATE_TEXTURE, &gsipcbuf);
+    int res = gsipc(GSREQ_CREATE_TEXTURE, &gsipcbuf);
     if (res)
         return NULL;
 
@@ -82,7 +82,7 @@ int destroy_texture(texture_d texture) {
 #ifdef SANITIZE_USER_SHADOW_BASE
     platform_asan_poison(texture->user_buf_map, sizeof(uint32_t) * texture->width * texture->height);
 #endif
-    return gsipc(VSREQ_DESTROY_TEXTURE, &gsipcbuf);
+    return gsipc(GSREQ_DESTROY_TEXTURE, &gsipcbuf);
 }
 
 /* Create a new renderer.
@@ -92,7 +92,7 @@ int destroy_texture(texture_d texture) {
  *  NULL for errors. */
 renderer_d create_renderer(window_d window) {
     gsipcbuf.create_renderer.req_window = window;
-    int res =  gsipc(VSREQ_CREATE_RENDERER, &gsipcbuf);
+    int res =  gsipc(GSREQ_CREATE_RENDERER, &gsipcbuf);
     if (res)
         return NULL;
 
@@ -106,7 +106,7 @@ renderer_d create_renderer(window_d window) {
  *  < 0 for errors. */
 int destroy_renderer(renderer_d renderer) {
     gsipcbuf.destroy_renderer.req_renderer = renderer;
-    return gsipc(VSREQ_DESTROY_RENDERER, &gsipcbuf);
+    return gsipc(GSREQ_DESTROY_RENDERER, &gsipcbuf);
 }
 
 /* Copy a texture to the renderer's back_buffer
@@ -117,7 +117,7 @@ int destroy_renderer(renderer_d renderer) {
 int copy_texture(renderer_d renderer, texture_d texture) {
     gsipcbuf.copy_texture.req_texture = texture;
     gsipcbuf.copy_texture.req_renderer = renderer;
-    return gsipc(VSREQ_COPY_TEXTURE, &gsipcbuf);
+    return gsipc(GSREQ_COPY_TEXTURE, &gsipcbuf);
 }
 
 /* Copy the renderer's back_buffer to the game texture buffer.
@@ -127,7 +127,7 @@ int copy_texture(renderer_d renderer, texture_d texture) {
  *  < 0 for errors. */
 int display(renderer_d renderer) {
     gsipcbuf.display.req_renderer = renderer;
-    return gsipc(VSREQ_DISPLAY, &gsipcbuf);
+    return gsipc(GSREQ_DISPLAY, &gsipcbuf);
 }
 
 /* Clear the renderer's back_buffer.
@@ -137,5 +137,5 @@ int display(renderer_d renderer) {
  *  < 0 for errors. */
 int clear(renderer_d renderer) {
     gsipcbuf.clear.req_renderer = renderer;
-    return gsipc(VSREQ_CLEAR, &gsipcbuf);
+    return gsipc(GSREQ_CLEAR, &gsipcbuf);
 }

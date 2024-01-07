@@ -259,6 +259,6 @@ void
 umain(int argc, char **argv) {
     cprintf("GS is running\n");
     pci_init(argv);
-    graphics_init(640, 400);
+    bga_init(640, 400);
     serve();
 }
