@@ -105,12 +105,9 @@ void CL_Disconnect (void)
 //	SCR_BringDownConsole ();
 
 // if running a local server, shut it down
-	if (cls.demoplayback)
-		CL_StopPlayback ();
-	else if (cls.state == ca_connected)
+
+	if (!cls.demoplayback && cls.state == ca_connected)
 	{
-		if (cls.demorecording)
-			CL_Stop_f ();
 
 		Con_DPrintf ("Sending clc_disconnect\n");
 		SZ_Clear (&cls.message);
@@ -224,6 +221,8 @@ void CL_NextDemo (void)
 		return;		// don't play demos
 
 	SCR_BeginLoadingPlaque ();
+	cls.demonum = -1;
+	return;
 
 	if (!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS)
 	{
@@ -721,9 +720,5 @@ void CL_Init (void)
 	
 	Cmd_AddCommand ("entities", CL_PrintEntities_f);
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
-	Cmd_AddCommand ("record", CL_Record_f);
-	Cmd_AddCommand ("stop", CL_Stop_f);
-	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
-	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
 }
 

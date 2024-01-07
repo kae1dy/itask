@@ -119,7 +119,7 @@ void Cvar_Set (char *var_name, char *value)
 	
 	var->string = Z_Malloc (Q_strlen(value)+1);
 	Q_strcpy (var->string, value);
-	var->value = Q_atof (var->string);
+	var->value = strtol(var->string, NULL, 0);
 	if (var->server && changed)
 	{
 		if (sv.active)
@@ -132,11 +132,11 @@ void Cvar_Set (char *var_name, char *value)
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue (char *var_name, float value)
+void Cvar_SetValue (char *var_name, int value)
 {
 	char	val[32];
 	
-	sprintf (val, "%f",value);
+	sprintf (val, "%i",value);
 	Cvar_Set (var_name, val);
 }
 
@@ -213,9 +213,10 @@ Writes lines containing "set variable value" for all variables
 with the archive flag set to true.
 ============
 */
-void Cvar_WriteVariables (FILE *f)
+void Cvar_WriteVariables (int fd)
 {
 	cvar_t	*var;
+	FILE * f = fdopen(fd, "rw");
 	
 	for (var = cvar_vars ; var ; var = var->next)
 		if (var->archive)

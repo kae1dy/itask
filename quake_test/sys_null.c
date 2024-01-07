@@ -33,7 +33,7 @@ FILE IO
 */
 
 #define MAX_HANDLES             10
-FILE    *sys_handles[MAX_HANDLES];
+int sys_handles[MAX_HANDLES];
 
 int             findhandle (void)
 {
@@ -51,85 +51,76 @@ int             findhandle (void)
 filelength
 ================
 */
-int filelength (FILE *f)
+int filelength (int fd)
 {
-	int             pos;
-	int             end;
-
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
-
-	return end;
+	struct stat st;
+	fstat(fd, &st);
+	return st.st_size;
 }
 
 int Sys_FileOpenRead (char *path, int *hndl)
 {
-	FILE    *f;
-	int             i;
+	int             i, fd;
 	
 	i = findhandle ();
 
-	f = fopen(path, "rb");
-	if (!f)
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
 	{
 		*hndl = -1;
 		return -1;
 	}
-	sys_handles[i] = f;
+	sys_handles[i] = fd;
 	*hndl = i;
 	
-	return filelength(f);
+	return filelength(fd);
 }
 
 int Sys_FileOpenWrite (char *path)
 {
-	FILE    *f;
+	int 	fd;
 	int             i;
 	
 	i = findhandle ();
 
-	f = fopen(path, "wb");
-	if (!f)
-		Sys_Error ("Error opening %s: %s", path,strerror(errno));
-	sys_handles[i] = f;
-	
+	fd = open(path, O_WRONLY | O_CREAT);
+	if (fd < 0)
+		Sys_Error ("Error opening %s.\n", path);
+	sys_handles[i] = fd;
 	return i;
 }
 
 void Sys_FileClose (int handle)
 {
-	fclose (sys_handles[handle]);
-	sys_handles[handle] = NULL;
+	close(sys_handles[handle]);
+	sys_handles[handle] = 0;
 }
 
 void Sys_FileSeek (int handle, int position)
 {
-	fseek (sys_handles[handle], position, SEEK_SET);
+	lseek(sys_handles[handle], position, SEEK_SET);
 }
 
 int Sys_FileRead (int handle, void *dest, int count)
 {
-	return fread (dest, 1, count, sys_handles[handle]);
+	return read(sys_handles[handle], dest, count);
 }
 
 int Sys_FileWrite (int handle, void *data, int count)
 {
-	return fwrite (data, 1, count, sys_handles[handle]);
+	return write(sys_handles[handle], data, count);
 }
 
 int     Sys_FileTime (char *path)
 {
-	FILE    *f;
+	int fd;
 	
-	f = fopen(path, "rb");
-	if (f)
+	fd = open(path, O_RDONLY);
+	if (fd >= 0)
 	{
-		fclose(f);
+		close(fd);
 		return 1;
 	}
-	
 	return -1;
 }
 

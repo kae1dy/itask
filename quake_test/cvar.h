@@ -59,7 +59,7 @@ typedef struct cvar_s
 	char	*string;
 	qboolean archive;		// set to true to cause it to be saved to vars.rc
 	qboolean server;		// notifies players when changed
-	float	value;
+	int		 value;
 	struct cvar_s *next;
 } cvar_t;
 
@@ -70,7 +70,7 @@ void 	Cvar_RegisterVariable (cvar_t *variable);
 void 	Cvar_Set (char *var_name, char *value);
 // equivelant to "<name> <variable>" typed at the console
 
-void	Cvar_SetValue (char *var_name, float value);
+void	Cvar_SetValue (char *var_name, int value);
 // expands value to a string and calls Cvar_Set
 
 float	Cvar_VariableValue (char *var_name);
@@ -88,7 +88,7 @@ qboolean Cvar_Command (void);
 // command.  Returns true if the command was a variable reference that
 // was handled. (print or change)
 
-void 	Cvar_WriteVariables (FILE *f);
+void 	Cvar_WriteVariables (int fd);
 // Writes lines containing "set variable value" for all variables
 // with the archive flag set to true.
 

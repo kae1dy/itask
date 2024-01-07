@@ -372,7 +372,6 @@ void Host_Connect_f (void)
 	cls.demonum = -1;		// stop demo loop in case this fails
 	if (cls.demoplayback)
 	{
-		CL_StopPlayback ();
 		CL_Disconnect ();
 	}
 	strcpy (name, Cmd_Argv(1));
@@ -425,7 +424,7 @@ void Host_Savegame_f (void)
 {
 	char	name[256];
 	FILE	*f;
-	int		i;
+	int		i, fd;
 	char	comment[SAVEGAME_COMMENT_LENGTH+1];
 
 	if (cmd_source != src_command)
@@ -474,8 +473,9 @@ void Host_Savegame_f (void)
 	COM_DefaultExtension (name, ".sav");
 	
 	Con_Printf ("Saving game to %s...\n", name);
-	f = fopen (name, "w");
-	if (!f)
+	fd = open(name, O_WRONLY | O_CREAT);
+	f = fdopen (fd, "w");
+	if (fd < 0 | !f)
 	{
 		Con_Printf ("ERROR: couldn't open.\n");
 		return;
@@ -501,13 +501,13 @@ void Host_Savegame_f (void)
 	}
 
 
-	ED_WriteGlobals (f);
+	ED_WriteGlobals (fd);
 	for (i=0 ; i<sv.num_edicts ; i++)
 	{
-		ED_Write (f, EDICT_NUM(i));
-		fflush (f);
+		ED_Write (fd, EDICT_NUM(i));
 	}
 	fclose (f);
+	close(fd);
 	Con_Printf ("done.\n");
 }
 
@@ -1545,87 +1545,6 @@ void Host_Viewprev_f (void)
 	PrintFrameName (m, e->v.frame);		
 }
 
-/*
-===============================================================================
-
-DEMO LOOP CONTROL
-
-===============================================================================
-*/
-
-
-/*
-==================
-Host_Startdemos_f
-==================
-*/
-void Host_Startdemos_f (void)
-{
-	int		i, c;
-
-	if (cls.state == ca_dedicated)
-	{
-		if (!sv.active)
-			Cbuf_AddText ("map start\n");
-		return;
-	}
-
-	c = Cmd_Argc() - 1;
-	if (c > MAX_DEMOS)
-	{
-		Con_Printf ("Max %i demos in demoloop\n", MAX_DEMOS);
-		c = MAX_DEMOS;
-	}
-	Con_Printf ("%i demo(s) in loop\n", c);
-
-	for (i=1 ; i<c+1 ; i++)
-		strncpy (cls.demos[i-1], Cmd_Argv(i), sizeof(cls.demos[0])-1);
-
-	if (!sv.active && cls.demonum != -1 && !cls.demoplayback)
-	{
-		cls.demonum = 0;
-		CL_NextDemo ();
-	}
-	else
-		cls.demonum = -1;
-}
-
-
-/*
-==================
-Host_Demos_f
-
-Return to looping demos
-==================
-*/
-void Host_Demos_f (void)
-{
-	if (cls.state == ca_dedicated)
-		return;
-	if (cls.demonum == -1)
-		cls.demonum = 1;
-	CL_Disconnect_f ();
-	CL_NextDemo ();
-}
-
-/*
-==================
-Host_Stopdemo_f
-
-Return to looping demos
-==================
-*/
-void Host_Stopdemo_f (void)
-{
-	if (cls.state == ca_dedicated)
-		return;
-	if (!cls.demoplayback)
-		return;
-	CL_StopPlayback ();
-	CL_Disconnect ();
-}
-
-//=============================================================================
 
 /*
 ==================
@@ -1665,9 +1584,6 @@ void Host_InitCommands (void)
 	Cmd_AddCommand ("save", Host_Savegame_f);
 	Cmd_AddCommand ("give", Host_Give_f);
 
-	Cmd_AddCommand ("startdemos", Host_Startdemos_f);
-	Cmd_AddCommand ("demos", Host_Demos_f);
-	Cmd_AddCommand ("stopdemo", Host_Stopdemo_f);
 
 	Cmd_AddCommand ("viewmodel", Host_Viewmodel_f);
 	Cmd_AddCommand ("viewframe", Host_Viewframe_f);

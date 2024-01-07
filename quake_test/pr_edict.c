@@ -482,13 +482,16 @@ ED_Write
 For savegames
 =============
 */
-void ED_Write (FILE *f, edict_t *ed)
+void ED_Write (int fd, edict_t *ed)
 {
 	ddef_t	*d;
 	int		*v;
 	int		i, j;
 	char	*name;
 	int		type;
+	
+	
+	FILE *f = fdopen(fd, "rw");
 
 	fprintf (f, "{\n");
 
@@ -613,12 +616,14 @@ FIXME: need to tag constants, doesn't really work
 ED_WriteGlobals
 =============
 */
-void ED_WriteGlobals (FILE *f)
+void ED_WriteGlobals (int fd)
 {
 	ddef_t		*def;
 	int			i;
 	char		*name;
 	int			type;
+	
+	FILE *f = fdopen(fd, "rw");
 
 	fprintf (f,"{\n");
 	for (i=0 ; i<progs->numglobaldefs ; i++)

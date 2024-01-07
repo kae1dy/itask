@@ -501,9 +501,10 @@ Key_WriteBindings
 Writes lines containing "bind key value"
 ============
 */
-void Key_WriteBindings (FILE *f)
+void Key_WriteBindings (int fd)
 {
 	int		i;
+	FILE *f = fdopen(fd, "rw");
 
 	for (i=0 ; i<256 ; i++)
 		if (keybindings[i])

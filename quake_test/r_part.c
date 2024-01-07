@@ -154,14 +154,15 @@ void R_ReadPointFile_f (void)
 {
 	FILE	*f;
 	vec3_t	org;
-	int		r;
+	int		r, fd;
 	int		c;
 	particle_t	*p;
 	char	name[MAX_OSPATH];
 	
 	sprintf (name,"maps/%s.pts", sv.name);
 
-	COM_FOpenFile (name, &f);
+	COM_FOpenFile (name, &fd);
+	f = fdopen(fd, "r");
 	if (!f)
 	{
 		Con_Printf ("couldn't open %s\n", name);
