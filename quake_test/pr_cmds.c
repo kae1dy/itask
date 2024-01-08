@@ -912,7 +912,7 @@ void PF_fabs (void)
 
 void PF_vtos (void)
 {
-	sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+	sprintf (pr_string_temp, "'%i %i %i'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
 	G_INT(OFS_RETURN) = pr_string_temp - pr_strings;
 }
 
@@ -1166,7 +1166,7 @@ void PF_rint (void)
 }
 void PF_floor (void)
 {
-	G_FLOAT(OFS_RETURN) = floor(G_FLOAT(OFS_PARM0));
+	G_FLOAT(OFS_RETURN) = (int)(G_FLOAT(OFS_PARM0));
 }
 void PF_ceil (void)
 {

@@ -49,7 +49,6 @@ int			minimum_memory;
 
 client_t	*host_client;			// current client
 
-jmp_buf 	host_abortserver;
 
 byte		*host_basepal;
 byte		*host_colormap;
@@ -104,7 +103,6 @@ void Host_EndGame (char *message, ...)
 	else
 		CL_Disconnect ();
 
-	longjmp (host_abortserver, 1);
 }
 
 /*
@@ -142,7 +140,6 @@ void Host_Error (char *error, ...)
 
 	inerror = false;
 
-	longjmp (host_abortserver, 1);
 }
 
 /*
@@ -241,13 +238,13 @@ Writes key bindings and archived cvars to config.cfg
 */
 void Host_WriteConfiguration (void)
 {
-	int fd;
+	int	fd;
 
 // dedicated servers initialize the host but don't parse and set the
 // config.cfg cvars
 	if (host_initialized & !isDedicated)
 	{
-		fd = open(va("%s/config.cfg", com_gamedir), O_WRONLY | O_CREAT | O_TRUNC);
+		fd = open(va("%s/config.cfg",com_gamedir), O_CREAT | O_WRONLY | O_TRUNC);
 		if (fd < 0)
 		{
 			Con_Printf ("Couldn't write config.cfg.\n");
@@ -582,9 +579,6 @@ void _Host_Frame (float time)
 	static double		time3 = 0;
 	int			pass1, pass2, pass3;
 
-	if (setjmp (host_abortserver) )
-		return;			// something bad happened, or the server disconnected
-
 // keep the random time dependent
 	rand ();
 	
@@ -842,7 +836,10 @@ void Host_Init (quakeparms_t *parms)
 		CL_Init ();
 	}
 
-	Cbuf_InsertText ("exec quake.rc\n");
+	// Cbuf_InsertText ("exec quake.rc\n");
+	Cbuf_InsertText("stuffcmds\n");
+	Cbuf_InsertText("exec default.cfg\n");
+	Cbuf_InsertText("togglemenu\n");
 
 	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark ();

@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // sys_null.h -- null system driver to aid porting efforts
 
 #include "quakedef.h"
-#include "errno.h"
 
 qboolean isDedicated;
 
@@ -32,11 +31,10 @@ FILE IO
 ===============================================================================
 */
 
-#define MAX_HANDLES 10
+#define MAX_HANDLES             10
 int sys_handles[MAX_HANDLES];
 
-int 
-findhandle (void)
+int             findhandle (void)
 {
 	int             i;
 	
@@ -59,27 +57,32 @@ int filelength (int fd)
 
 int Sys_FileOpenRead (char *path, int *hndl)
 {
-	int i = findhandle();
+	int             i, fd;
+	
+	i = findhandle ();
 
-	int fd = open(path, O_RDONLY)
-
-	if (fd < 0) {
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+	{
 		*hndl = -1;
 		return -1;
 	}
 	sys_handles[i] = fd;
 	*hndl = i;
+	
 	return filelength(fd);
 }
 
 int Sys_FileOpenWrite (char *path)
 {
+	int 	fd;
+	int             i;
+	
+	i = findhandle ();
 
-	int i = findhandle ();
-	int fd = open(path, O_CREATE | O_WRONLY);
-
-	if (fd < 0) return Sys_Error ("Error opening %s\n", path);
-
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (fd < 0)
+		Sys_Error ("Error opening %s.\n", path);
 	sys_handles[i] = fd;
 	return i;
 }
@@ -87,12 +90,12 @@ int Sys_FileOpenWrite (char *path)
 void Sys_FileClose (int handle)
 {
 	close(sys_handles[handle]);
-	sys_handles[handle] = NULL;
+	sys_handles[handle] = 0;
 }
 
 void Sys_FileSeek (int handle, int position)
 {
-	seek(sys_handles[handle], (off_t) position);
+	seek(sys_handles[handle], position);
 }
 
 int Sys_FileRead (int handle, void *dest, int count)
@@ -105,11 +108,13 @@ int Sys_FileWrite (int handle, void *data, int count)
 	return write(sys_handles[handle], data, count);
 }
 
-int Sys_FileTime (char *path)
+int     Sys_FileTime (char *path)
 {
-	int fd = open(path, O_RDONLY);
-
-	if (fd) {
+	int fd;
+	
+	fd = open(path, O_RDONLY);
+	if (fd >= 0)
+	{
 		close(fd);
 		return 1;
 	}
@@ -136,14 +141,24 @@ void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
 
 void Sys_Error (char *error, ...)
 {
+	va_list         argptr;
+
 	printf ("Sys_Error: ");   
-	printf(error, ...);
+	va_start (argptr,error);
+	vprintf (error,argptr);
+	va_end (argptr);
+	printf ("\n");
+
 	exit();
 }
 
-int Sys_Printf (char *fmt, ...)
+void Sys_Printf (char *fmt, ...)
 {
-	printf(fmt, ...);
+	va_list         argptr;
+	
+	va_start (argptr,fmt);
+	vprintf (fmt,argptr);
+	va_end (argptr);
 }
 
 void Sys_Quit (void)
@@ -154,7 +169,9 @@ void Sys_Quit (void)
 double Sys_FloatTime (void)
 {
 	static double t;
+	
 	t += 0.1;
+	
 	return t;
 }
 

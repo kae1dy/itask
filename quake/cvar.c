@@ -132,11 +132,11 @@ void Cvar_Set (char *var_name, char *value)
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue (char *var_name, float value)
+void Cvar_SetValue (char *var_name, int value)
 {
 	char	val[32];
 	
-	sprintf (val, "%f",value);
+	sprintf (val, "%i",value);
 	Cvar_Set (var_name, val);
 }
 
@@ -219,6 +219,6 @@ void Cvar_WriteVariables (int fd)
 	
 	for (var = cvar_vars ; var ; var = var->next)
 		if (var->archive)
-			fprintf(fd, "%s \"%s\"\n", var->name, var->string);
+			fprintf (fd, "%s \"%s\"\n", var->name, var->string);
 }
 

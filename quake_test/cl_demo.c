@@ -61,7 +61,7 @@ int CL_GetMessage (void)
 		for (i=0 ; i<3 ; i++)
 		{
 			r = read(cls.demofile, &f, 4);
-			cl.mviewangles[0][i] = LittleFloat (f);
+			cl.mviewangles[0][i] = f;
 		}
 		
 		net_message.cursize = LittleLong (net_message.cursize);

@@ -440,32 +440,48 @@ char	m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH+1];
 int		loadable[MAX_SAVEGAMES];
 
 
-// TO DO:
 void M_ScanSaves (void)
 {
-	int		i, j;
-	char	name[MAX_OSPATH];
-	FILE	*f;
-	int		version;
+	int		i, j, idx;
+	char	buf[MAX_OSPATH], ch;
+	int		version, fd;
 
 	for (i=0 ; i<MAX_SAVEGAMES ; i++)
 	{
 		strcpy (m_filenames[i], "--- UNUSED SLOT ---");
 		loadable[i] = false;
-		sprintf (name, "%s/s%i.sav", com_gamedir, i);
-		f = fopen (name, "r");
-		if (!f)
-			continue;
-		fscanf (f, "%i\n", &version);
-		fscanf (f, "%79s\n", name);
-		strncpy (m_filenames[i], name, sizeof(m_filenames[i])-1);
+		sprintf (buf, "%s/s%i.sav", com_gamedir, i);
+		fd = open(buf, O_RDONLY);
+		if (fd < 0) continue;
 
-	// change _ back to space
+		// fscanf (f, "%i\n", &version);
+		ch = 0;
+		idx = 0;
+		while (ch != '\n' && idx < MAX_OSPATH - 1) {
+			read(fd, &ch, sizeof(ch));
+			buf[idx++] = ch;
+		}
+		buf[idx] = '\0';
+		char *endptr = NULL;
+		version = strtol(buf, &endptr, 0); 
+		
+		// fscanf (f, "%79s\n", name);
+		ch = 0;
+		idx = 0;
+		while (ch != '\n' && idx < MAX_OSPATH - 1) {
+			read(fd, &ch, sizeof(ch));
+			buf[idx++] = ch;
+		}
+		buf[idx] = '\0';
+		
+		strncpy (m_filenames[i], buf, sizeof(m_filenames[i])-1);
+
+		// change _ back to space
 		for (j=0 ; j<SAVEGAME_COMMENT_LENGTH ; j++)
 			if (m_filenames[i][j] == '_')
 				m_filenames[i][j] = ' ';
 		loadable[i] = true;
-		fclose (f);
+		close(fd);
 	}
 }
 

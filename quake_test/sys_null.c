@@ -83,7 +83,7 @@ int Sys_FileOpenWrite (char *path)
 	
 	i = findhandle ();
 
-	fd = open(path, O_WRONLY | O_CREAT);
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (fd < 0)
 		Sys_Error ("Error opening %s.\n", path);
 	sys_handles[i] = fd;

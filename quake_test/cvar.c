@@ -119,7 +119,7 @@ void Cvar_Set (char *var_name, char *value)
 	
 	var->string = Z_Malloc (Q_strlen(value)+1);
 	Q_strcpy (var->string, value);
-	var->value = strtol(var->string, NULL, 0);
+	var->value = Q_atof (var->string);
 	if (var->server && changed)
 	{
 		if (sv.active)
@@ -216,7 +216,7 @@ with the archive flag set to true.
 void Cvar_WriteVariables (int fd)
 {
 	cvar_t	*var;
-	FILE * f = fdopen(fd, "rw");
+	FILE *f = fdopen(fd, "w");
 	
 	for (var = cvar_vars ; var ; var = var->next)
 		if (var->archive)

@@ -49,7 +49,6 @@ int			minimum_memory;
 
 client_t	*host_client;			// current client
 
-jmp_buf 	host_abortserver;
 
 byte		*host_basepal;
 byte		*host_colormap;
@@ -104,7 +103,6 @@ void Host_EndGame (char *message, ...)
 	else
 		CL_Disconnect ();
 
-	longjmp (host_abortserver, 1);
 }
 
 /*
@@ -142,7 +140,6 @@ void Host_Error (char *error, ...)
 
 	inerror = false;
 
-	longjmp (host_abortserver, 1);
 }
 
 /*
@@ -247,7 +244,7 @@ void Host_WriteConfiguration (void)
 // config.cfg cvars
 	if (host_initialized & !isDedicated)
 	{
-		fd = open(va("%s/config.cfg",com_gamedir), O_CREAT | O_WRONLY);
+		fd = open(va("%s/config.cfg",com_gamedir), O_CREAT | O_WRONLY | O_TRUNC);
 		if (fd < 0)
 		{
 			Con_Printf ("Couldn't write config.cfg.\n");
@@ -581,9 +578,6 @@ void _Host_Frame (float time)
 	static double		time2 = 0;
 	static double		time3 = 0;
 	int			pass1, pass2, pass3;
-
-	if (setjmp (host_abortserver) )
-		return;			// something bad happened, or the server disconnected
 
 // keep the random time dependent
 	rand ();

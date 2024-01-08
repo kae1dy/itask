@@ -508,7 +508,7 @@ void Key_WriteBindings (int fd)
 	for (i=0 ; i<256 ; i++)
 		if (keybindings[i])
 			if (*keybindings[i])
-				fprintf(fd, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
+				fprintf (fd, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
 

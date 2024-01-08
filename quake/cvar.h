@@ -70,7 +70,7 @@ void 	Cvar_RegisterVariable (cvar_t *variable);
 void 	Cvar_Set (char *var_name, char *value);
 // equivelant to "<name> <variable>" typed at the console
 
-void	Cvar_SetValue (char *var_name, float value);
+void	Cvar_SetValue (char *var_name, int value);
 // expands value to a string and calls Cvar_Set
 
 float	Cvar_VariableValue (char *var_name);

@@ -59,7 +59,7 @@ typedef struct cvar_s
 	char	*string;
 	qboolean archive;		// set to true to cause it to be saved to vars.rc
 	qboolean server;		// notifies players when changed
-	int		 value;
+	float	value;
 	struct cvar_s *next;
 } cvar_t;
 

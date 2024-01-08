@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	GAMENAME	"id1"
 
-#include <inc/lib.h>
+#include "inc/lib.h"
+#include "quakegeneric.h"
 
 #define	VID_LockBuffer()
 #define	VID_UnlockBuffer()

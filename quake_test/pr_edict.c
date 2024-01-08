@@ -490,14 +490,11 @@ void ED_Write (int fd, edict_t *ed)
 	char	*name;
 	int		type;
 	
-	
-	FILE *f = fdopen(fd, "rw");
-
-	fprintf (f, "{\n");
+	fprintf (fd, "{\n");
 
 	if (ed->free)
 	{
-		fprintf (f, "}\n");
+		fprintf (fd, "}\n");
 		return;
 	}
 	
@@ -518,11 +515,11 @@ void ED_Write (int fd, edict_t *ed)
 		if (j == type_size[type])
 			continue;
 	
-		fprintf (f,"\"%s\" ",name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
+		fprintf (fd,"\"%s\" ",name);
+		fprintf (fd,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
 	}
 
-	fprintf (f, "}\n");
+	fprintf (fd, "}\n");
 }
 
 void ED_PrintNum (int ent)
@@ -622,10 +619,9 @@ void ED_WriteGlobals (int fd)
 	int			i;
 	char		*name;
 	int			type;
-	
-	FILE *f = fdopen(fd, "rw");
 
-	fprintf (f,"{\n");
+
+	fprintf (fd,"{\n");
 	for (i=0 ; i<progs->numglobaldefs ; i++)
 	{
 		def = &pr_globaldefs[i];
@@ -640,10 +636,10 @@ void ED_WriteGlobals (int fd)
 			continue;
 
 		name = pr_strings + def->s_name;		
-		fprintf (f,"\"%s\" ", name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
+		fprintf (fd,"\"%s\" ", name);
+		fprintf (fd,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
 	}
-	fprintf (f,"}\n");
+	fprintf (fd,"}\n");
 }
 
 /*

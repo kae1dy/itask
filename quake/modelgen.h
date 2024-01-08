@@ -29,13 +29,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef INCLUDELIBS
 
-#include <inc/lib.h>
-
 #include "cmdlib.h"
 #include "scriplib.h"
 #include "trilib.h"
 #include "lbmlib.h"
 #include "mathlib.h"
+
+#include "qualedef.h"
 
 #endif
 
