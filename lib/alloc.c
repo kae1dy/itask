@@ -1,28 +1,49 @@
-#include "inc/lib.h"
+#include <inc/lib.h>
 
-#define USER_HEAP_START 0x00800000
-#define USER_HEAP_END (USER_HEAP_START - HUGE_PAGE_SIZE * 256)
+static Heap_Chunk Chunks[MAX_HEAP_CHUNKS];
+static size_t IN_USE = 0;
+static physaddr_t heap_addr = USER_HEAP_START;
 
-physaddr_t heap_address = USER_HEAP_START;
-
-typedef struct {
-	size_t size;
-	bool used;
-} Heap_Chunk;
 
 void *
 malloc(size_t size) {
-	physaddr_t address = heap_address - size - sizeof(Heap_Chunk);
-	assert(address >= USER_HEAP_END);
-	
-	const Heap_Chunk chunk = {
-		.size = size;
-		.used = true;
-	}
-	*(Heap_Chunk *) address = chunk; 
-	heap_address = address;
-	return address + sizeof(Heap_Chunk);
+    if (!size || IN_USE >= MAX_HEAP_CHUNKS ||
+    	USER_HEAP_END <= heap_addr + size) {
+   		return NULL;
+   	}
+
+    if (IN_USE > 0) {
+    	int best_idx = -1;
+    	size_t best_size = 0;
+    	
+    	for (size_t i = 0; i < IN_USE; ++i) {
+    		if (!(Chunks[i].used) && Chunks[i].size >= size &&
+    			(best_idx == -1 || best_size > Chunks[i].size)) {
+    			
+    			best_idx = i;
+    			best_size = Chunks[i].size;
+			} 
+    	}
+    	if (best_idx != -1) {
+    		Chunks[i].used = true;
+    		return (void *) Chunks[best_idx].addr;
+    	}
+    }
+    // Not enough allocated memory
+
+    int res = sys_alloc_region(sys_getenvid(), (void *) heap_addr, 
+    				ROUNDUP(size, PAGE_SIZE), PROT_R | PROT_W | PROT_USER_);
+    if (res < 0) return NULL;
+        
+    Chunks[IN_USE].used = true;
+    Chunks[IN_USE].size = ROUNDUP(size, PAGE_SIZE);
+    Chunks[IN_USE].addr = heap_addr;
+    
+    heap_addr += ROUNDUP(size, PAGE_SIZE);
+
+    return (void*) (Chunks[IN_USE++].addr);
 }
+
 
 void *
 calloc(size_t nmemb, size_t size) {
@@ -32,9 +53,15 @@ calloc(size_t nmemb, size_t size) {
 }
 
 void
-free(void * ptr) {
+free(void *ptr) {
 	if (!ptr) return;
 	
-	Heap_Chunk *chunk = (Heap_Chunk *) ptr;
-	chunk->used = false;
+	for (size_t i = 0; i < IN_USE; ++i) {
+
+    	if ((physaddr_t) ptr == Chunks[i].addr) {
+    		Chunks[i].used = false;
+    		return;
+    	}
+    }
+    panic("Trying to free non-allocated memory.\n"); 
 } 
