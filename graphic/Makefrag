@@ -1,7 +1,7 @@
 OBJDIRS += graphic
 
-VGAFILES := $(OBJDIR)/graphic/vga_server.o \
-			$(OBJDIR)/graphic/svga.o \
+GRAPHICFILES := $(OBJDIR)/graphic/vga_server.o \
+			$(OBJDIR)/graphic/virtio.o \
 			#$(OBJDIR)/fs/serv.o \
 			$(OBJDIR)/fs/test.o \
 			$(OBJDIR)/fs/pci.o \
@@ -12,10 +12,10 @@ $(OBJDIR)/graphic/%.o: graphic/%.c fs/pci.h inc/lib.h $(OBJDIR)/.vars.USER_CFLAG
 	@mkdir -p $(@D)
 	$(V)$(CC) $(USER_CFLAGS) $(USER_SAN_CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/graphic/graphic: $(VGAFILES) $(OBJDIR)/lib/entry.o $(OBJDIR)/lib/libjos.a $(USER_EXTRA_OBJFILES) user/user.ld
+$(OBJDIR)/graphic/graphic: $(GRAPHICFILES) $(OBJDIR)/lib/entry.o $(OBJDIR)/lib/libjos.a $(USER_EXTRA_OBJFILES) user/user.ld
 	@echo + ld $@
 	$(V)mkdir -p $(@D)
 	$(V)$(LD) -o $@ $(ULDFLAGS) $(LDFLAGS) $(USER_SAN_LDFLAGS) -nostdlib \
-		$(OBJDIR)/lib/entry.o $(VGAFILES) obj/fs/pci.o $(USER_EXTRA_OBJFILES) \
+		$(OBJDIR)/lib/entry.o $(GRAPHICFILES) obj/fs/pci.o $(USER_EXTRA_OBJFILES) \
 		-L$(OBJDIR)/lib -ljos $(GCC_LIB)
 	$(V)$(OBJDUMP) -S $@ >$@.asm
