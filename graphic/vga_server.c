@@ -3,10 +3,10 @@
 #include <inc/graphic.h>
 
 #include "fs/pci.h"
-#include "video.h"
+#include "virtio.h"
 
 /* Virtual address at which to receive graphics mappings containing client requests. */
-union Gsipc *vsreq = (union Gsipc*)0x0FFFF000;
+union Gsipc *gsreq = (union Gsipc*)0x0FFFF000;
 
 /* Open req->req_path in mode req->req_omode, storing the Fd page and
  * permissions to return to the calling environment in *pg_store and
@@ -217,7 +217,6 @@ vshandler handlers[] = {
         [GSREQ_DESTROY_RENDERER] = serve_destroy_renderer,
         // [GSREQ_CREATE_TEXTURE] = serve_create_texture,
         // [GSREQ_DESTROY_TEXTURE] = serve_destroy_texture,
-        [GSREQ_UPDATE_TEXTURE] = serve_update_texture,
         [GSREQ_COPY_TEXTURE] = serve_copy_texture,
         [GSREQ_DISPLAY] = serve_display,
         [GSREQ_CLEAR] = serve_clear
@@ -232,19 +231,19 @@ void serve(void) {
     while (1) {
         perm = 0;
         size_t sz = PAGE_SIZE;
-        req = ipc_recv((int32_t *)&whom, vsreq, &sz, &perm);
+        req = ipc_recv((int32_t *)&whom, gsreq, &sz, &perm);
 
         if (!(perm & PROT_R)) {
             continue; /* Just leave it hanging... */
         }
 
         if (req == GSREQ_CREATE_TEXTURE) {
-            res = serve_create_texture(whom, vsreq);
+            res = serve_create_texture(whom, gsreq);
         } else if (req == GSREQ_DESTROY_TEXTURE) {
-            res = serve_destroy_texture(whom, vsreq);
+            res = serve_destroy_texture(whom, gsreq);
         }
         else if (req < NHANDLERS && handlers[req]) {
-            res = handlers[req](vsreq);
+            res = handlers[req](gsreq);
         }
         else {
             res = -GRAPHIC_INVAL;
@@ -259,6 +258,6 @@ void
 umain(int argc, char **argv) {
     cprintf("GS is running\n");
     pci_init(argv);
-    bga_init(640, 400);
+    virtio_init(640, 400);
     serve();
 }
