@@ -1,0 +1,89 @@
+OBJDIRS += quake
+
+Q_CFLAGS := -fno-pic -pipe -Ddebug=0 -fno-builtin -I. -MD -O1 -ffreestanding \
+-fno-omit-frame-pointer -mno-red-zone -Wall -Wformat=2 \
+-g -gpubnames -gdwarf-4 -fno-stack-protector -mno-sse -mno-sse2 \
+-mno-mmx -DLAB=12 -mcmodel=large -m64 -DJOS_USER -msse -lm
+
+QUAKEOFILES := 	$(OBJDIR)/quake/cd_null.o \
+			$(OBJDIR)/quake/chase.o \
+			$(OBJDIR)/quake/cl_demo.o \
+			$(OBJDIR)/quake/cl_input.o \
+			$(OBJDIR)/quake/cl_main.o \
+			$(OBJDIR)/quake/cl_parse.o \
+			$(OBJDIR)/quake/cl_tent.o \
+			$(OBJDIR)/quake/cmd.o \
+			$(OBJDIR)/quake/common.o \
+			$(OBJDIR)/quake/console.o \
+			$(OBJDIR)/quake/crc.o \
+			$(OBJDIR)/quake/cvar.o \
+			$(OBJDIR)/quake/d_edge.o \
+			$(OBJDIR)/quake/d_fill.o \
+			$(OBJDIR)/quake/d_init.o \
+			$(OBJDIR)/quake/d_modech.o \
+			$(OBJDIR)/quake/d_part.o \
+			$(OBJDIR)/quake/d_polyse.o \
+			$(OBJDIR)/quake/d_scan.o \
+			$(OBJDIR)/quake/d_sky.o \
+			$(OBJDIR)/quake/d_sprite.o \
+			$(OBJDIR)/quake/d_surf.o \
+			$(OBJDIR)/quake/d_vars.o \
+			$(OBJDIR)/quake/d_zpoint.o \
+			$(OBJDIR)/quake/draw.o \
+			$(OBJDIR)/quake/host_cmd.o \
+			$(OBJDIR)/quake/host.o \
+			$(OBJDIR)/quake/keys.o \
+			$(OBJDIR)/quake/mathlib.o \
+			$(OBJDIR)/quake/menu.o \
+			$(OBJDIR)/quake/model.o \
+			$(OBJDIR)/quake/net_loop.o \
+			$(OBJDIR)/quake/net_main.o \
+			$(OBJDIR)/quake/net_none.o \
+			$(OBJDIR)/quake/net_vcr.o \
+			$(OBJDIR)/quake/nonintel.o \
+			$(OBJDIR)/quake/pr_cmds.o \
+			$(OBJDIR)/quake/pr_edict.o \
+			$(OBJDIR)/quake/pr_exec.o \
+			$(OBJDIR)/quake/r_aclip.o \
+			$(OBJDIR)/quake/r_alias.o \
+			$(OBJDIR)/quake/r_bsp.o \
+			$(OBJDIR)/quake/r_draw.o \
+			$(OBJDIR)/quake/r_edge.o \
+			$(OBJDIR)/quake/r_efrag.o \
+			$(OBJDIR)/quake/r_light.o \
+			$(OBJDIR)/quake/r_main.o \
+			$(OBJDIR)/quake/r_misc.o \
+			$(OBJDIR)/quake/r_part.o \
+			$(OBJDIR)/quake/r_sky.o \
+			$(OBJDIR)/quake/r_sprite.o \
+			$(OBJDIR)/quake/r_surf.o \
+			$(OBJDIR)/quake/r_vars.o \
+			$(OBJDIR)/quake/sbar.o \
+			$(OBJDIR)/quake/screen.o \
+			$(OBJDIR)/quake/snd_null.o \
+			$(OBJDIR)/quake/sv_main.o \
+			$(OBJDIR)/quake/sv_move.o \
+			$(OBJDIR)/quake/sv_phys.o \
+			$(OBJDIR)/quake/sv_user.o \
+			$(OBJDIR)/quake/sys_null.o \
+			$(OBJDIR)/quake/vid_null.o \
+			$(OBJDIR)/quake/view.o \
+			$(OBJDIR)/quake/wad.o \
+			$(OBJDIR)/quake/world.o \
+			$(OBJDIR)/quake/zone.o \
+			$(OBJDIR)/quake/quakegeneric.o \
+			$(OBJDIR)/quake/quakegeneric_sdl2.o \
+			
+
+$(OBJDIR)/quake/%.o: quake/%.c inc/lib.h
+	@echo + cc[Quake] $<
+	@mkdir -p $(@D)
+	$(V)$(CC) $(Q_CFLAGS) $(USER_SAN_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/quake/quake: $(QUAKEOFILES) $(OBJDIR)/lib/entry.o $(OBJDIR)/lib/libjos.a $(USER_EXTRA_OBJFILES) user/user.ld
+	@echo + ld $@
+	$(V)mkdir -p $(@D)
+	ld.lld $(ULDFLAGS) $(LDFLAGS) $(USER_SAN_LDFLAGS) \
+		$(OBJDIR)/lib/entry.o $(USER_EXTRA_OBJFILES) $(QUAKEOFILES) \
+		$(GCC_LIB) -L$(OBJDIR)/lib -ljos -lm -o $@
+	$(V)$(OBJDUMP) -S $@ >$@.asm

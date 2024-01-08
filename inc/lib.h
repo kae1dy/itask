@@ -22,6 +22,7 @@
 #include <inc/fd.h>
 #include <inc/args.h>
 #include <inc/graphic.h>
+#include <inc/alloc.h>
 
 #ifdef SANITIZE_USER_SHADOW_BASE
 /* asan unpoison routine used for whitelisting regions. */

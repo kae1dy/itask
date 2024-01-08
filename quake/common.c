@@ -1367,7 +1367,7 @@ Finds the file in the search path.
 Sets com_filesize and one of handle or file
 ===========
 */
-int COM_FindFile (char *filename, int *handle, FILE **file)
+int COM_FindFile (char *filename, int *handle, int *fd)
 {
 	searchpath_t    *search;
 	char            netpath[MAX_OSPATH];
@@ -1376,9 +1376,9 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 	int                     i;
 	int                     findtime, cachetime;
 
-	if (file && handle)
+	if (fd && handle)
 		Sys_Error ("COM_FindFile: both handle and file set");
-	if (!file && !handle)
+	if (!fd && !handle)
 		Sys_Error ("COM_FindFile: neither handle or file set");
 		
 //
@@ -1409,9 +1409,9 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 					}
 					else
 					{       // open a new file on the pakfile
-						*file = fopen (pak->filename, "rb");
-						if (*file)
-							fseek (*file, pak->files[i].filepos, SEEK_SET);
+						*fd = open(pak->filename, O_RDONLY);
+						if (*fd >= 0)
+							seek(*fd, pak->files[i].filepos); 
 					}
 					com_filesize = pak->files[i].filelen;
 					return com_filesize;
@@ -1453,7 +1453,7 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 			else
 			{
 				Sys_FileClose (i);
-				*file = fopen (netpath, "rb");
+				*fd = open(netpath, O_RDONLY);
 			}
 			return com_filesize;
 		}
@@ -1465,7 +1465,7 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 	if (handle)
 		*handle = -1;
 	else
-		*file = NULL;
+		*fd = 0;
 	com_filesize = -1;
 	return -1;
 }
@@ -1493,9 +1493,9 @@ If the requested file is inside a packfile, a new FILE * will be opened
 into the file.
 ===========
 */
-int COM_FOpenFile (char *filename, FILE **file)
+int COM_FOpenFile (char *filename, int *fd)
 {
-	return COM_FindFile (filename, NULL, file);
+	return COM_FindFile (filename, NULL, fd);
 }
 
 /*

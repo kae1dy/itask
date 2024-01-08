@@ -305,10 +305,10 @@ char *PR_ValueString (etype_t type, eval_t *val)
 		sprintf (line, "void");
 		break;
 	case ev_float:
-		sprintf (line, "%5.1f", val->_float);
+		sprintf (line, "%i", val->_float);
 		break;
 	case ev_vector:
-		sprintf (line, "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
+		sprintf (line, "'%i %i %i'", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	case ev_pointer:
 		sprintf (line, "pointer");
@@ -357,10 +357,10 @@ char *PR_UglyValueString (etype_t type, eval_t *val)
 		sprintf (line, "void");
 		break;
 	case ev_float:
-		sprintf (line, "%f", val->_float);
+		sprintf (line, "%i", val->_float);
 		break;
 	case ev_vector:
-		sprintf (line, "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
+		sprintf (line, "%i %i %i", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	default:
 		sprintf (line, "bad type %i", type);
@@ -482,19 +482,19 @@ ED_Write
 For savegames
 =============
 */
-void ED_Write (FILE *f, edict_t *ed)
+void ED_Write (int fd, edict_t *ed)
 {
 	ddef_t	*d;
 	int		*v;
 	int		i, j;
 	char	*name;
 	int		type;
-
-	fprintf (f, "{\n");
+	
+	fprintf (fd, "{\n");
 
 	if (ed->free)
 	{
-		fprintf (f, "}\n");
+		fprintf (fd, "}\n");
 		return;
 	}
 	
@@ -515,11 +515,11 @@ void ED_Write (FILE *f, edict_t *ed)
 		if (j == type_size[type])
 			continue;
 	
-		fprintf (f,"\"%s\" ",name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
+		fprintf (fd,"\"%s\" ",name);
+		fprintf (fd,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
 	}
 
-	fprintf (f, "}\n");
+	fprintf (fd, "}\n");
 }
 
 void ED_PrintNum (int ent)
@@ -613,14 +613,14 @@ FIXME: need to tag constants, doesn't really work
 ED_WriteGlobals
 =============
 */
-void ED_WriteGlobals (FILE *f)
+void ED_WriteGlobals (int fd)
 {
 	ddef_t		*def;
 	int			i;
 	char		*name;
 	int			type;
 
-	fprintf (f,"{\n");
+	fprintf (fd,"{\n");
 	for (i=0 ; i<progs->numglobaldefs ; i++)
 	{
 		def = &pr_globaldefs[i];
@@ -635,10 +635,10 @@ void ED_WriteGlobals (FILE *f)
 			continue;
 
 		name = pr_strings + def->s_name;		
-		fprintf (f,"\"%s\" ", name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
+		fprintf (fd,"\"%s\" ", name);
+		fprintf (fd,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
 	}
-	fprintf (f,"}\n");
+	fprintf (fd,"}\n");
 }
 
 /*
@@ -743,7 +743,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		break;
 		
 	case ev_float:
-		*(float *)d = atof (s);
+		*(float *)d = Q_atof (s);
 		break;
 		
 	case ev_vector:
@@ -755,13 +755,13 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 			while (*v && *v != ' ')
 				v++;
 			*v = 0;
-			((float *)d)[i] = atof (w);
+			((float *)d)[i] = Q_atof (w);
 			w = v = v+1;
 		}
 		break;
 		
 	case ev_entity:
-		*(int *)d = EDICT_TO_PROG(EDICT_NUM(atoi (s)));
+		*(int *)d = EDICT_TO_PROG(EDICT_NUM(Q_atoi (s)));
 		break;
 		
 	case ev_field:

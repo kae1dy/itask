@@ -300,3 +300,21 @@ snprintf(char *buf, size_t n, const char *fmt, ...) {
 
     return rc;
 }
+
+int
+vsprintf(char *buf, const char *fmt, va_list ap) {
+	return vsnprintf(buf, -1, fmt, ap);
+}
+
+int 
+sprintf(char* buf, const char* fmt, ...) {
+	va_list ap;
+	
+  	va_start(ap, fmt);
+  	int rc = vsnprintf(buf, (size_t) -1, fmt, ap);
+  	va_end(ap);
+  	
+  	return rc;
+}
+
+

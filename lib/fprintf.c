@@ -70,3 +70,8 @@ printf(const char *fmt, ...) {
 
     return res;
 }
+
+int
+vprintf (const char *fmt, va_list ap) {
+  	return vfprintf(1, fmt, ap);
+}

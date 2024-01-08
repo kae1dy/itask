@@ -5,6 +5,8 @@
 #	Recursive Make Considered Harmful
 #	http://aegis.sourceforge.net/auug97.pdf
 #
+
+
 OBJDIR := obj
 SHELL := /bin/bash
 
@@ -283,8 +285,9 @@ all: .git/hooks/post-checkout .git/hooks/pre-commit
 	   $(OBJDIR)/lib/%.o $(OBJDIR)/fs/%.o $(OBJDIR)/net/%.o \
 	   $(OBJDIR)/user/%.o \
 	   $(OBJDIR)/graphic/%.o \
-	   $(OBJDIR)/doom-jos.o \
 	   $(OBJDIR)/prog/%.o
+	   $(OBJDIR)/prog/%.o \
+	   $(OBJDIR)/quake/%.o
 
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -DLAB=$(LAB) -mcmodel=large -m64
 USER_CFLAGS := $(CFLAGS) -DLAB=$(LAB) -mcmodel=large -m64
@@ -310,10 +313,12 @@ $(OBJDIR)/.vars.%: FORCE
 # Include Makefrags for subdirectories
 include kern/Makefrag
 include lib/Makefrag
+
 ifeq ($(CONFIG_KSPACE),y)
 include prog/Makefrag
 else
 include user/Makefrag
+include quake/Makefrag
 include fs/Makefrag
 include graphic/Makefrag
 endif
@@ -325,7 +330,7 @@ IMAGES = $(OVMF_FIRMWARE) $(JOS_LOADER) $(OBJDIR)/kern/kernel $(JOS_ESP)/EFI/BOO
 QEMUOPTS += -drive file=$(OBJDIR)/fs/fs.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm
 QEMUOPTS += -vga virtio
 IMAGES += $(OBJDIR)/fs/fs.img
-QEMUOPTS += -bios $(OVMF_FIRMWARE)
+QEMUOPTS += -bios $(OVMF_FIRMWARE) -vga virtio 
 # QEMUOPTS += -debugcon file:$(UEFIDIR)/debug.log -global isa-debugcon.iobase=0x402
 
 define POST_CHECKOUT
